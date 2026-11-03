@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Sequence Recognition | Viterbi AI Dashboard</title>
+    <!-- Modern Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dark-theme">
+    <!-- Ambient Background Glows -->
+    <div class="ambient-glow glow-top-cyan"></div>
+    <div class="ambient-glow glow-bottom-purple"></div>
+
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="brand-logo-hex">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v20M17 5v14M7 5v14M22 10v4M2 10v4"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <div class="brand-title">VITERBI<span class="brand-highlight">SPEECH</span> <span class="version-tag">AI 2.0</span></div>
+                    <div class="brand-subtitle">Hidden Markov Model Phoneme Decoder</div>
+                </div>
+            </div>
+
+            <div class="nav-links">
+                <a href="#overview" class="nav-link">Overview</a>
+                <a href="#input-section" class="nav-link">Audio Input</a>
+                <a href="#hmm-section" class="nav-link">HMM Model</a>
+                <a href="#comparison-section" class="nav-link highlight">Comparison</a>
+                <a href="#visualizations" class="nav-link">Trellis Lattice</a>
+                <a href="#step-by-step" class="nav-link">Math Steps</a>
+                <a href="#educational" class="nav-link">Viva Guide</a>
+            </div>
+
+            <div class="nav-actions">
+                <button id="nav-run-btn" class="btn btn-neon-cyan">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    <span>Run Decoder</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="dashboard-main">
+
+        <!-- HERO SECTION -->
+        <header id="overview" class="hero-section">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="live-pulse"></span>
+                    <span>Dynamic Programming &bull; Maximum A-Posteriori (MAP) Decoding</span>
+                </div>
+                <h1 class="hero-title">
+                    Speech Sequence Recognition Using the <span class="gradient-text-cyan">Viterbi Algorithm</span>
+                </h1>
+                <p class="hero-description">
+                    Decode hidden acoustic phonemes (<span class="hero-state-tag tag-silent">Silent</span>, <span class="hero-state-tag tag-vowel">Vowel</span>, <span class="hero-state-tag tag-consonant">Consonant</span>) from continuous audio energy observations (<span class="hero-obs-tag">Low</span>, <span class="hero-obs-tag">Medium</span>, <span class="hero-obs-tag">High</span>). Discover why dynamic programming guarantees the optimal global path where naive greedy methods fail.
+                </p>
+
+                <!-- Audio Wave Visualizer Simulation Bar -->
+                <div class="soundwave-bar">
+                    <div class="wave-track" id="hero-soundwave">
+                        <span class="wave-bar h-1"></span>
+                        <span class="wave-bar h-3"></span>
+                        <span class="wave-bar h-2"></span>
+                        <span class="wave-bar h-4"></span>
+                        <span class="wave-bar h-6"></span>
+                        <span class="wave-bar h-5"></span>
+                        <span class="wave-bar h-3"></span>
+                        <span class="wave-bar h-2"></span>
+                        <span class="wave-bar h-5"></span>
+                        <span class="wave-bar h-6"></span>
+                        <span class="wave-bar h-4"></span>
+                        <span class="wave-bar h-2"></span>
+                        <span class="wave-bar h-1"></span>
+                        <span class="wave-bar h-3"></span>
+                        <span class="wave-bar h-5"></span>
+                        <span class="wave-bar h-2"></span>
+                    </div>
+                    <span class="soundwave-label">Simulated Acoustic Energy Profile &bull; 16kHz Framed Speech</span>
+                </div>
+            </div>
+
+            <!-- Pillars Cards -->
+            <div class="hero-pillars-grid">
+                <div class="pillar-card">
+                    <div class="pillar-icon-box cyan">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2zM12 12 2.1 7.1M12 12v9.9"/></svg>
+                    </div>
+                    <h4>Hidden Markov Model</h4>
+                    <p>Models human speech as a dual stochastic process: hidden vocal articulatory phonemes emitting observable acoustic energy.</p>
+                </div>
+
+                <div class="pillar-card pillar-viterbi">
+                    <div class="pillar-icon-box emerald">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>
+                    </div>
+                    <h4>Method 1: Viterbi Algorithm</h4>
+                    <p>Applies dynamic programming backwards and forwards to discover the single <strong>globally most probable sequence</strong> of states.</p>
+                </div>
+
+                <div class="pillar-card pillar-independent">
+                    <div class="pillar-icon-box rose">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </div>
+                    <h4>Method 2: Independent State</h4>
+                    <p>Independently picks the state with the highest emission at each single time point, ignoring sequential transition constraints.</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- SECTION 1: AUDIO FEATURE INPUT SEQUENCE -->
+        <section id="input-section" class="dash-section">
+            <div class="section-glass-panel">
+                <div class="section-header">
+                    <div>
+                        <div class="section-tag-pill">Stage 01 &bull; Acoustic Capture</div>
+                        <h2 class="section-title">Audio Feature Input Stream</h2>
+                    </div>
+
+                    <div class="segment-tabs">
+                        <button class="seg-btn active" data-tab="presets-tab">
+                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                            <span>Predefined Presets</span>
+                        </button>
+                        <button class="seg-btn" data-tab="manual-tab">
+                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            <span>Interactive Builder</span>
+                        </button>
+                        <button class="seg-btn" data-tab="audio-tab">
+                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5v14M7 5v14M22 10v4M2 10v4"/></svg>
+                            <span>WAV Audio Upload</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab 1: Presets -->
+                <div id="presets-tab" class="tab-pane active">
+                    <div class="preset-glass-card">
+                        <label for="sample-select" class="form-label-fancy">Select Predefined Speech Scenario:</label>
+                        <div class="select-glow-wrap">
+                            <select id="sample-select" class="select-glow">
+                                <!-- Populated via JS -->
+                            </select>
+                        </div>
+                        <div id="preset-description" class="preset-glow-callout"></div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Manual Builder -->
+                <div id="manual-tab" class="tab-pane">
+                    <div class="manual-glass-card">
+                        <div class="token-clicker-row">
+                            <span class="control-label">Append Observation Frame:</span>
+                            <div class="token-btn-group">
+                                <button type="button" class="btn-token-glow token-low" data-token="Low">
+                                    <span class="eq-icon eq-low"><span></span><span></span></span>
+                                    <span>+ Low (Silence / Ambient)</span>
+                                </button>
+                                <button type="button" class="btn-token-glow token-medium" data-token="Medium">
+                                    <span class="eq-icon eq-med"><span></span><span></span><span></span></span>
+                                    <span>+ Medium (Consonant Burst)</span>
+                                </button>
+                                <button type="button" class="btn-token-glow token-high" data-token="High">
+                                    <span class="eq-icon eq-high"><span></span><span></span><span></span><span></span></span>
+                                    <span>+ High (Vowel Resonance)</span>
+                                </button>
+                            </div>
+                            <div class="token-control-actions">
+                                <button type="button" id="clear-tokens-btn" class="btn btn-outline-danger btn-sm">Clear</button>
+                                <button type="button" id="reset-sample-btn" class="btn btn-outline-secondary btn-sm">Reset Sample</button>
+                            </div>
+                        </div>
+
+                        <div class="text-input-row">
+                            <label for="manual-text-input" class="form-label-xs">Or type comma-separated sequence:</label>
+                            <div class="glow-input-group">
+                                <input type="text" id="manual-text-input" placeholder="e.g. Low, Medium, High, Medium, Low" class="glow-text-input">
+                                <button type="button" id="apply-text-seq-btn" class="btn btn-secondary btn-sm">Apply Sequence</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Real Audio Upload -->
+                <div id="audio-tab" class="tab-pane">
+                    <div class="audio-upload-grid">
+                        <div class="drop-zone-fancy" id="audio-drop-zone">
+                            <div class="drop-icon-glow">
+                                <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                            </div>
+                            <h4>Upload Speech WAV Recording</h4>
+                            <p class="drop-sub">Drag & drop a <code>.wav</code> file or click to browse</p>
+                            <input type="file" id="audio-file-input" accept=".wav" class="file-input-hidden">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('audio-file-input').click()">Select Audio File</button>
+                        </div>
+
+                        <div class="audio-synth-card">
+                            <div class="synth-info">
+                                <h4>Instant Acoustic Formant Generator</h4>
+                                <p>No microphone available? Synthesize an acoustic formant energy envelope modeling the spoken utterance <strong>"HELLO"</strong> with automated frame RMS extraction:</p>
+                            </div>
+                            <button type="button" id="load-synthetic-audio-btn" class="btn btn-neon-cyan">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5v14M7 5v14M22 10v4M2 10v4"/></svg>
+                                <span>Synthesize Speech Formants</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="audio-status-banner" class="audio-status-badge" style="display: none;"></div>
+                </div>
+
+                <!-- ACTIVE OBSERVATION SEQUENCE TRACK -->
+                <div class="active-track-wrapper">
+                    <div class="track-header-bar">
+                        <div class="track-title-info">
+                            <span class="track-dot"></span>
+                            <span class="track-heading">Active Acoustic Observation Track</span>
+                            <span id="seq-length-badge" class="track-length-pill">5 Time Steps (T=5)</span>
+                        </div>
+                        <button id="run-main-btn" class="btn btn-neon-cyan btn-glow-pulse">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            <span>Decode Sequence (Run Viterbi)</span>
+                        </button>
+                    </div>
+
+                    <!-- Flow of Equalizer Token Chips -->
+                    <div id="active-tokens-container" class="tokens-equalizer-stream">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: HMM ARCHITECTURE & MATRICES -->
+        <section id="hmm-section" class="dash-section">
+            <div class="section-glass-panel">
+                <div class="section-header">
+                    <div>
+                        <div class="section-tag-pill">Stage 02 &bull; Probabilistic Parameters</div>
+                        <h2 class="section-title">Hidden Markov Model Matrices</h2>
+                    </div>
+                    <div class="matrix-btn-actions">
+                        <button id="reset-hmm-btn" class="btn btn-outline-secondary btn-sm">Reset Defaults</button>
+                        <button id="validate-hmm-btn" class="btn btn-outline-primary btn-sm">Verify Stochastic Sums (&Sigma; = 1.0)</button>
+                    </div>
+                </div>
+
+                <div class="matrices-cards-container">
+                    <!-- Initial Probabilities (π) -->
+                    <div class="glass-matrix-box">
+                        <div class="box-head">
+                            <div class="box-head-text">
+                                <h3>Initial State Probabilities (&pi;)</h3>
+                                <p>Likelihood that speech begins in state $S_j$ at $t=0$.</p>
+                            </div>
+                            <span id="initial-sum-badge" class="glow-pill-badge valid">&Sigma; = 1.000 &check;</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="matrix-grid-table">
+                                <thead>
+                                    <tr>
+                                        <th>State</th>
+                                        <th>Probability &pi;</th>
+                                        <th>Acoustic Meaning</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="initial-prob-body">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Transition Probabilities (A) -->
+                    <div class="glass-matrix-box">
+                        <div class="box-head">
+                            <div class="box-head-text">
+                                <h3>State Transition Probability Matrix (A = [a<sub>ij</sub>])</h3>
+                                <p>Probability of transitioning from state $S_i$ at $t-1$ to state $S_j$ at $t$. Each row must sum to 1.0.</p>
+                            </div>
+                            <span id="trans-valid-badge" class="glow-pill-badge valid">Rows Valid &check;</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="matrix-grid-table trans-grid-table">
+                                <thead>
+                                    <tr>
+                                        <th>Current (i) \ Next (j)</th>
+                                        <th>&rarr; Silent</th>
+                                        <th>&rarr; Vowel</th>
+                                        <th>&rarr; Consonant</th>
+                                        <th>Row &Sigma;</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transition-prob-body">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Emission Probabilities (B) -->
+                    <div class="glass-matrix-box">
+                        <div class="box-head">
+                            <div class="box-head-text">
+                                <h3>Acoustic Emission Matrix (B = [b<sub>j</sub>(O<sub>k</sub>)])</h3>
+                                <p>Probability that hidden state $S_j$ emits acoustic energy level $O_k$. Each row must sum to 1.0.</p>
+                            </div>
+                            <span id="emission-valid-badge" class="glow-pill-badge valid">Rows Valid &check;</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="matrix-grid-table emission-grid-table">
+                                <thead>
+                                    <tr>
+                                        <th>State (j) \ Energy (k)</th>
+                                        <th>Low (Silence / Baseline)</th>
+                                        <th>Medium (Fricative / Burst)</th>
+                                        <th>High (Formant Peak)</th>
+                                        <th>Row &Sigma;</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="emission-prob-body">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: RECOGNITION COMPARISON (SHOWCASE) -->
+        <section id="comparison-section" class="dash-section">
+            <div class="section-glass-panel showcase-panel">
+                <div class="section-header">
+                    <div>
+                        <div class="section-tag-pill highlight-glow">Stage 03 &bull; Core Algorithm Showdown</div>
+                        <h2 class="section-title">Method 1 (Viterbi) vs. Method 2 (Independent)</h2>
+                    </div>
+                    <div id="divergence-indicator" class="status-indicator">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Side-by-Side Showdown Cards -->
+                <div class="showdown-grid">
+                    <!-- Method 1: Viterbi (Winner) -->
+                    <div class="showdown-card card-viterbi">
+                        <div class="winner-glow-ribbon">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            <span>Globally Optimal Sequence</span>
+                        </div>
+
+                        <div class="card-head-block">
+                            <span class="method-meta-tag tag-cyan">Method 1 &bull; Dynamic Programming</span>
+                            <h3 class="method-title">Viterbi Algorithm Path</h3>
+                            <p class="method-sub">Considers transition constraints $a_{ij}$ and tracks optimal backpointers</p>
+                        </div>
+
+                        <div class="decoded-path-wrapper">
+                            <span class="path-caption">Decoded State Sequence:</span>
+                            <div id="viterbi-path-tokens" class="path-timeline-ribbon">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+
+                        <div class="stats-counter-strip">
+                            <div class="stat-counter">
+                                <span class="stat-name">Log Likelihood (ln P)</span>
+                                <span id="viterbi-log-score" class="stat-val font-mono">-6.7583</span>
+                            </div>
+                            <div class="stat-counter">
+                                <span class="stat-name">Joint Likelihood</span>
+                                <span id="viterbi-prob-score" class="stat-val font-mono">1.161 &times; 10⁻³</span>
+                            </div>
+                            <div class="stat-counter">
+                                <span class="stat-name">Speech Continuity</span>
+                                <span class="stat-val text-neon-emerald">100% Enforced</span>
+                            </div>
+                        </div>
+
+                        <div class="method-math-card">
+                            <code>V_t(j) = max_i [V_{t-1}(i) + ln(a_ij)] + ln(b_j(O_t))</code>
+                        </div>
+                    </div>
+
+                    <!-- Method 2: Independent (Myopic) -->
+                    <div class="showdown-card card-independent">
+                        <div class="warning-glow-ribbon">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/></svg>
+                            <span>Local Greedy Fallacy</span>
+                        </div>
+
+                        <div class="card-head-block">
+                            <span class="method-meta-tag tag-rose">Method 2 &bull; Pointwise argmax</span>
+                            <h3 class="method-title">Independent Most Likely State</h3>
+                            <p class="method-sub">Selects highest instantaneous emission $P(O_t \mid S_j)$ ignoring state history</p>
+                        </div>
+
+                        <div class="decoded-path-wrapper">
+                            <span class="path-caption">Decoded State Sequence:</span>
+                            <div id="indep-path-tokens" class="path-timeline-ribbon">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+
+                        <div class="stats-counter-strip">
+                            <div class="stat-counter">
+                                <span class="stat-name">Decision Rule</span>
+                                <span class="stat-val font-mono font-xs">argmax_j P(O_t | S_j)</span>
+                            </div>
+                            <div class="stat-counter">
+                                <span class="stat-name">Transition Awareness</span>
+                                <span class="stat-val text-neon-rose font-xs">Zero (Ignored)</span>
+                            </div>
+                            <div class="stat-counter">
+                                <span class="stat-name">Phonetic Validity</span>
+                                <span class="stat-val text-neon-amber font-xs">Prone to Glitches</span>
+                            </div>
+                        </div>
+
+                        <div class="method-math-card">
+                            <code>S_t = argmax_j [ b_j(O_t) ] (Ignores previous state)</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DIVERGENCE DIAGNOSTIC CALLOUT -->
+                <div class="diagnostic-glass-box">
+                    <div class="diag-head">
+                        <div class="diag-title-row">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1M18 8l4 4-4 4M21 12H9"/></svg>
+                            <h3>Comparative Diagnosis & Why The Methods Diverge</h3>
+                        </div>
+                        <span id="divergence-summary-pill" class="glow-pill-badge"></span>
+                    </div>
+
+                    <div id="overall-explanation-text" class="diagnostic-narrative">
+                        <!-- Populated via JS -->
+                    </div>
+
+                    <div class="table-wrap">
+                        <table class="matrix-grid-table comp-table-styled">
+                            <thead>
+                                <tr>
+                                    <th>Frame (t)</th>
+                                    <th>Acoustic Observation</th>
+                                    <th>Method 1: Viterbi Path</th>
+                                    <th>Method 2: Independent State</th>
+                                    <th>Status</th>
+                                    <th>Acoustic & Probabilistic Rationale</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparison-table-body">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: INTERACTIVE TRELLIS LATTICE & VISUALIZATIONS -->
+        <section id="visualizations" class="dash-section">
+            <div class="section-glass-panel">
+                <div class="section-header">
+                    <div>
+                        <div class="section-tag-pill">Stage 04 &bull; Trellis Graph & Analytics</div>
+                        <h2 class="section-title">Interactive Trellis Lattice & Analytics</h2>
+                    </div>
+                </div>
+
+                <!-- SVG TRELLIS LATTICE GRAPH (THE SHOWSTOPPER) -->
+                <div class="trellis-svg-card">
+                    <div class="trellis-header-strip">
+                        <div>
+                            <h3>Dynamic Programming Trellis Lattice Diagram</h3>
+                            <p>Visualizing the hidden-state lattice across time. The illuminated neon line represents the winning Viterbi path reconstructed via backpointers.</p>
+                        </div>
+                        <div class="trellis-legend">
+                            <span class="leg-item"><span class="leg-dot dot-cyan"></span> Winning Viterbi Path</span>
+                            <span class="leg-item"><span class="leg-dot dot-muted"></span> Evaluated Transitions</span>
+                        </div>
+                    </div>
+
+                    <div class="trellis-scroll-view">
+                        <div id="trellis-svg-container" class="svg-container-box">
+                            <!-- Populated with interactive SVG via script.js -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart.js Graphs Grid -->
+                <div class="charts-double-grid">
+                    <div class="chart-glass-card">
+                        <div class="chart-card-head">
+                            <h3>Viterbi Log-Score Trajectory</h3>
+                            <p>Evolution of accumulated state log-likelihood across time steps</p>
+                        </div>
+                        <div class="chart-box">
+                            <canvas id="trellisChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-glass-card">
+                        <div class="chart-card-head">
+                            <h3>Instantaneous Emission Likelihood Profile</h3>
+                            <p>Pointwise probability $P(O_t \mid S_j)$ of each state emitting observation $O_t$</p>
+                        </div>
+                        <div class="chart-box">
+                            <canvas id="emissionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backpointer Table -->
+                <div class="glass-matrix-box mt-5">
+                    <div class="box-head">
+                        <div>
+                            <h3>Backpointer Matrix (&psi;<sub>t</sub>(j))</h3>
+                            <p>Stores the optimal predecessor state index that led into state $j$ at time $t$. Winning path is highlighted in electric cyan.</p>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="matrix-grid-table backpointer-table">
+                            <thead>
+                                <tr id="backpointer-head-row">
+                                    <th>State \ Time Step</th>
+                                </tr>
+                            </thead>
+                            <tbody id="backpointer-body">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Viterbi Log Score Table -->
+                <div class="glass-matrix-box mt-4">
+                    <div class="box-head">
+                        <div>
+                            <h3>Viterbi Log Probability Matrix (V<sub>t</sub>(j))</h3>
+                            <p>Numeric log scores accumulated at each state and time step</p>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="matrix-grid-table viterbi-score-table">
+                            <thead>
+                                <tr id="viterbi-head-row">
+                                    <th>State \ Time Step</th>
+                                </tr>
+                            </thead>
+                            <tbody id="viterbi-score-body">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: STEP-BY-STEP MATHEMATICAL TRACE -->
+        <section id="step-by-step" class="dash-section">
+            <div class="section-glass-panel">
+                <div class="section-header">
+                    <div>
+                        <div class="section-tag-pill">Stage 05 &bull; Mathematical Rigor</div>
+                        <h2 class="section-title">Step-by-Step Viterbi Arithmetic Breakdown</h2>
+                    </div>
+                </div>
+
+                <!-- Formula Cards -->
+                <div class="formula-cards-grid">
+                    <div class="formula-glass-card">
+                        <span class="f-title">Standard Product Recurrence</span>
+                        <div class="f-code font-mono">
+                            V<sub>t</sub>(j) = &max;<sub>i</sub> [ V<sub>t-1</sub>(i) &times; a<sub>ij</sub> ] &times; b<sub>j</sub>(O<sub>t</sub>)
+                        </div>
+                        <div class="f-desc">
+                            Multiplies optimal predecessor probability with transition probability $a_{ij}$ and acoustic emission $b_j(O_t)$.
+                        </div>
+                    </div>
+
+                    <div class="formula-glass-card highlight-cyan">
+                        <span class="f-title text-neon-cyan">Logarithmic Implementation (Zero Underflow)</span>
+                        <div class="f-code font-mono">
+                            ln V<sub>t</sub>(j) = &max;<sub>i</sub> [ ln V<sub>t-1</sub>(i) + ln a<sub>ij</sub> ] + ln b<sub>j</sub>(O<sub>t</sub>)
+                        </div>
+                        <div class="f-desc">
+                            Transforms floating-point multiplications into stable additions, preventing $10^{-50}$ floating point zero-underflow on long sequences.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stepper Container -->
+                <div class="stepper-cards-stream" id="stepper-container">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: VIVA & PRESENTATION GUIDE -->
+        <section id="educational" class="dash-section">
+            <div class="section-glass-panel">
+                <div class="section-header">
+                    <div>
+                        <div class="section-tag-pill">Stage 06 &bull; Examination Ready</div>
+                        <h2 class="section-title">Faculty Presentation & Viva Reference Guide</h2>
+                    </div>
+                </div>
+
+                <div class="viva-accordion-list">
+                    <details class="viva-item" open>
+                        <summary class="viva-header">
+                            <span>1. What is Speech Recognition in an HMM Context?</span>
+                            <span class="acc-arrow">&#9662;</span>
+                        </summary>
+                        <div class="viva-body">
+                            <p>Speech recognition is the task of transforming continuous acoustic waveforms into discrete phonetic units. Because sound waves are perturbed by speaker accent, microphone noise, and room acoustics, we extract discrete feature tokens (e.g. Low, Medium, High energy frames or MFCC centroids). A Hidden Markov Model represents the underlying phonetic or articulatory vocal states (Silent, Vowel, Consonant) which are unobservable directly from audio.</p>
+                        </div>
+                    </details>
+
+                    <details class="viva-item" open>
+                        <summary class="viva-header">
+                            <span>2. Why is Viterbi Superior to Pointwise Independent State Selection?</span>
+                            <span class="acc-arrow">&#9662;</span>
+                        </summary>
+                        <div class="viva-body">
+                            <p><strong>Independent State Selection:</strong> Considers only the instantaneous emission probability $P(O_t \mid S_j)$ at each isolated frame. It completely ignores temporal transitions between consecutive states ($a_{ij}$). Consequently, it can output physically impossible sequences (e.g., transition between states where $a_{ij} = 0$) and is vulnerable to transient acoustic noise.</p>
+                            <p><strong>Viterbi Algorithm:</strong> Evaluates the entire sentence or utterance globally, calculating the single most likely path of hidden states that explains the sequence of observations. It guarantees the maximum-a-posteriori (MAP) trajectory by incorporating transition probabilities that enforce phonetic continuity.</p>
+                        </div>
+                    </details>
+
+                    <details class="viva-item">
+                        <summary class="viva-header">
+                            <span>3. What Are the Four Formal Steps of the Viterbi Algorithm?</span>
+                            <span class="acc-arrow">&#9662;</span>
+                        </summary>
+                        <div class="viva-body">
+                            <p><strong>1. Initialization (t=0):</strong> $V_0(j) = \pi_j \cdot b_j(O_0)$ and $\psi_0(j) = 0$.</p>
+                            <p><strong>2. Recursion (t=1..T-1):</strong> $V_t(j) = \max_i [V_{t-1}(i) \cdot a_{ij}] \cdot b_j(O_t)$, storing winning predecessor in backpointer $\psi_t(j) = \arg\max_i [V_{t-1}(i) \cdot a_{ij}]$.</p>
+                            <p><strong>3. Termination (t=T-1):</strong> $\hat{S}_{T-1} = \arg\max_j V_{T-1}(j)$.</p>
+                            <p><strong>4. Backtracking:</strong> Reconstructs the optimal state sequence backwards: $\hat{S}_t = \psi_{t+1}(\hat{S}_{t+1})$ for $t = T-2$ down to $0$.</p>
+                        </div>
+                    </details>
+
+                    <details class="viva-item">
+                        <summary class="viva-header">
+                            <span>4. Why Must We Use Logarithmic Probabilities?</span>
+                            <span class="acc-arrow">&#9662;</span>
+                        </summary>
+                        <div class="viva-body">
+                            <p>Multiplying fractional probabilities ($< 1.0$) across multiple time steps causes numbers to shrink exponentially. For an utterance of even 30 frames, the product can drop below $10^{-50}$, causing floating-point underflow to zero. By transforming probabilities with $\ln(P)$, multiplications become additions ($\ln(A \times B) = \ln A + \ln B$), entirely preventing arithmetic underflow.</p>
+                        </div>
+                    </details>
+
+                    <details class="viva-item" open>
+                        <summary class="viva-header">
+                            <span>5. Live College Presentation Demonstration Script</span>
+                            <span class="acc-arrow">&#9662;</span>
+                        </summary>
+                        <div class="viva-body presentation-script">
+                            <div class="script-step">
+                                <span class="step-num">Step 1</span>
+                                <div><strong>Load Preset 1:</strong> Select <em>Sample 1: Sustained Vowel Word</em> and click <em>Decode Sequence</em>.</div>
+                            </div>
+                            <div class="script-step">
+                                <span class="step-num">Step 2</span>
+                                <div><strong>Highlight Divergence:</strong> Show the faculty that at $t=3$ ('Medium' observation), the independent method chose <strong>Consonant</strong> because Consonant has an emission probability of 0.60 vs. Vowel's 0.30.</div>
+                            </div>
+                            <div class="script-step">
+                                <span class="step-num">Step 3</span>
+                                <div><strong>Explain Viterbi's Superiority:</strong> Explain: <em>"Sir/Ma'am, even though Consonant has higher instantaneous emission, Viterbi chooses Vowel because the transition probability from Vowel to Vowel is 0.50, and transitioning from Consonant to Silent at step 4 is heavily penalized ($P=0.10$). Viterbi evaluates the global speech trajectory."</em></div>
+                            </div>
+                            <div class="script-step">
+                                <span class="step-num">Step 4</span>
+                                <div><strong>Show Interactive Trellis:</strong> Point to the glowing neon Trellis Lattice to demonstrate how backpointers trace the winning path backwards.</div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="dashboard-footer">
+        <div class="footer-wrap">
+            <div>&copy; Speech Sequence Recognition AI &bull; Hidden Markov Model &amp; Viterbi Decoding System</div>
+            <div class="footer-tech-stack">
+                <span class="stack-badge">Python 3.10</span>
+                <span class="stack-badge">Flask Engine</span>
+                <span class="stack-badge">Chart.js Visualizer</span>
+                <span class="stack-badge">Dynamic Programming</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
